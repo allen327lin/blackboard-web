@@ -29,10 +29,10 @@ video {
     height: 100vh;
 }
 
-button {
+.Snap, .Close {
     position: absolute;
     bottom: 20px;
-    left: 20px;
+    right: 185px;
 
     appearance: none;
     border: none;
@@ -50,7 +50,7 @@ button {
     cursor: pointer;
 }
 
-button:hover{
+.Snap, .Close:hover{
     background-position: 100%;
 }
 
@@ -60,6 +60,19 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.dropDown{
+    font-size: 24px;
+    font-weight: 700;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    justify-content: center;
+    background-position: left top;
+    width: auto;
+    background-color: lightblue;
 }
 
 

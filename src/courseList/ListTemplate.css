@@ -1,0 +1,14 @@
+.CardWrapper {
+    margin-left: 80px;
+    margin-top: 50px;
+    margin-bottom: 50px;
+
+    display: inline-block;
+
+}
+
+.Card {
+    width: 18rem;
+    /*margin: 0 auto;*/
+    display: inline-block;
+}

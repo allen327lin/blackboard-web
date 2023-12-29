@@ -1,13 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+// import GetPhoto from './getPhotos/takeThePhoto';
+// import CourseList from './courseList/CourseList';
+import BasicExample from "./NavigationBar";
 import reportWebVitals from './reportWebVitals';
+// import { BrowserRouter } from 'react-router-dom'
+import App from "./App";
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+      <BasicExample/>
+    <App/>
   </React.StrictMode>
 );
 

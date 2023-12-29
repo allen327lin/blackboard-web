@@ -1,0 +1,56 @@
+@font-face {
+    font-family: 'KGSecondChancesSketch';
+    src: url('../kg_second_chances/KGSecondChancesSketch.ttf') format('truetype');
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 45%;
+    }
+}
+
+
+.Title {
+    font-family: 'KGSecondChancesSketch', sans-serif;
+    font-size: 120px;
+    position: absolute;
+    top: 40%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #E8E5E5;
+    animation: typing 3s steps(20) forwards 1;
+    color: #E8E5E5;
+    display: inline-block;
+}
+
+
+
+.background-container {
+    position: relative;
+    height: 95vh;
+    overflow: hidden;
+}
+
+.background-image {
+    background-image: url('../Pictures/blackboard.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    position: absolute;
+    top:0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+
+
+
+
+
+

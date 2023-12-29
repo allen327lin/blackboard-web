@@ -1,0 +1,44 @@
+.CourseListTitle {
+    margin-top: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #352016;
+}
+
+.CourseList {
+    margin: 30px;
+    display: block;
+    text-align: center;
+    width:auto;
+    height: auto;
+    border: 2px solid #2D443A;
+    background-color: #2D443A;
+    padding: 50px;
+}
+
+.Row {
+    display: flex;
+    justify-content: center;
+
+}
+
+.RowContainer {
+    display: inline-block;
+}
+
+
+body{
+    background-color: #E8E5E5;
+}
+
+.ListTemplate {
+    margin: 30px;
+    width:auto;
+    height: 100%;
+}
+
+.Row, .ListTemplate {
+    max-width: 100%;
+    width: 100%;
+}
+

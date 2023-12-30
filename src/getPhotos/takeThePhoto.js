@@ -1,37 +1,31 @@
 import React, { useRef, useEffect, useState } from "react";
 import './takeThePhoto.css';
-import {Dropdown} from "react-bootstrap";
 
 function GetPhoto() {
-    const videoRef = useRef(null);
     const photoRef = useRef(null);
 
     const [hasPhoto, setHasPhoto] = useState(false);
-    const [stream, setStream] = useState(null);
 
-    const [selectedCourse, setSelectedCourse] = useState("Course"); // 默认文本为"Course"
-    // ... (其他状态和函数)
-
-    const handleCourseSelection = (course) => {
-        setSelectedCourse(course);
-        // 在这里处理用户选择课程的逻辑
-        console.log(`${course}`);
-    };
+    const videoRef = useRef(null);
+    const [ws, setWs] = useState(null);
 
     const startVideo = () => {
         navigator.mediaDevices
-            .getUserMedia({ video: true})
+            .getUserMedia({ video: true })
             .then((stream) => {
                 let video = videoRef.current;
                 video.srcObject = stream;
                 video.play();
-                setStream(stream);
+                setWs(new WebSocket("ws://http://122.116.234.117/GetPhoto:3000"));
+                ws.onopen = () => {
+                    ws.send("Hello, server!");
+                    video.srcObject.getTracks().forEach(track => ws.addTrack(track, stream));
+                };
             })
             .catch((err) => {
                 console.error(err);
             });
     };
-
     const takePhoto = () => {
 
         let video = videoRef.current;
@@ -48,10 +42,7 @@ function GetPhoto() {
 
         ctx.drawImage(video, 0, 0, width, height);
         setHasPhoto(true);
-
-
     };
-
 
     const closePhoto = () => {
         let photo = photoRef.current;
@@ -63,29 +54,21 @@ function GetPhoto() {
     };
 
     useEffect(() => {
+        const startVideo = () => {
+        };
         startVideo();
     }, []);
+    
 
     return (
         <div className="App">
-            <Dropdown className="dropDown">
-                <Dropdown.Toggle variant="course" id="dropdown-basic">
-                    {selectedCourse}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => handleCourseSelection('Math')}>Math</Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleCourseSelection('DataStructure')}>DataStructure</Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleCourseSelection('Data')}>Data</Dropdown.Item>
-                </Dropdown.Menu>
-            </Dropdown>
             <div className="camra">
                 <video ref={videoRef}></video>
-                <button className="Snap" onClick={takePhoto}>SNAP!</button>
+                <button onClick={takePhoto}>SNAP!</button>
             </div>
             <div className={"result" + (hasPhoto ? " hasPhoto" : "")}>
                 <canvas ref={photoRef}></canvas>
-                <button className="Close" onClick={closePhoto}>CLOSE!</button>
+                <button onClick={closePhoto}>CLOSE!</button>
             </div>
         </div>
     );

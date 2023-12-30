@@ -9,10 +9,16 @@
     "axios": "^1.5.1",
     "body-parser": "^1.20.2",
     "bootstrap": "^5.3.2",
+    "browserify-fs": "^1.0.0",
+    "browserify-zlib": "^0.2.0",
     "cors": "^2.8.5",
     "couchbase": "^4.2.7",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "image-size": "^1.0.2",
     "nanoid": "^5.0.1",
+    "path-browserify": "^1.0.1",
+    "querystring-es3": "^0.2.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.8.0",
     "react-dom": "^18.2.0",
@@ -20,9 +26,12 @@
     "react-scripts": "5.0.1",
     "react-webcam": "^7.1.1",
     "sass": "^1.68.0",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
     "uuid": "^9.0.1",
-    "web-vitals": "^2.1.4",
-    "ws": "^8.14.2"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -49,6 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "webpack-cli": "^5.1.4"
   }
 }

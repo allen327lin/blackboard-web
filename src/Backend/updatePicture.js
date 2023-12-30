@@ -1,158 +1,106 @@
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const port = 5000;
 const couchbase = require('couchbase')
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const imageId = uuidv4(); // 生成一个UUID作为图像ID
+const bodyParser = require('body-parser');
 
 
 
-async function main() {
-    const clusterConnStr = 'couchbase://www.blackboard.services'
-    const username = 'Admin'
-    const password = 'blackboard'
-    const bucketName = 'black-board'
+app.use(bodyParser.json({ limit: '10mb' }));
 
+
+require('dotenv').config();
+
+app.use(cors());
+app.use(express.json());
+
+// 处理 "/api/GetPhoto" 路径的路由
+app.post('/api/GetPhoto', (req, res) => {
+  async function main() {
+
+    const username = process.env.COUCHBASE_USERNAME; 
+    const password = process.env.COUCHBASE_PASSWORD; 
+    // const username = "Admin";
+    // const password = "blackboard";
+    const clusterConnStr = 'couchbase://localhost'
     const timestamp = Date.now();
-
-    const imagePath = '../Pictures/blackboard.jpg';
-    const imageBuffer = fs.readFileSync(imagePath);
-    const imageBase64 = imageBuffer.toString('base64');
-
-
+  
     const cluster = await couchbase.connect(clusterConnStr, {
-        username: username,
-        password: password,
+      username: username,
+      password: password,
     })
     // end::connect[]
 
-    const course = 'Math';
-    const semester = '110-2';
-    const imageData = imageBuffer.toString('base64'); // 如果需要Base64编码的话
+    const course = req.body.course;
+    const semester = req.body.semester;
+    const imageBase64 = req.body.imageBase64;
+
+    
+  
     const documentData = {
-        image: imageBase64,
-        course: course,
-        semester: semester,
-        timestamp: timestamp
-
+      image: imageBase64,
+      course: course,
+      semester: semester,
+      timestamp: timestamp
+  
     };
-
-    const bucket = cluster.bucket(bucketName)
-
+  
+    const bucket = cluster.bucket("black-board");
+    // const scopeName = course
+  
     // Get a reference to the default collection, required only for older Couchbase server versions
-    const collection = bucket.defaultCollection()
+  
+    const collection = bucket.scope('CoursePicture').collection('Picture')
+  
+    try {
+      await collection.upsert(imageId, documentData);
+      let getResult = await collection.get(imageId)
+      res.status(200).json({
+        message: "Successfully processed the data!",
+        getResult: JSON.stringify(getResult) // 將您需要的數據放入getResult中
+      });
+      
+    } catch (error) {
+      // 发生错误时发送错误响应
+      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(413).send("Request Entity Too Large");
 
-    // const collection = bucket.scope('image').collection(course)
+    }
+  
+  }
 
+  main()
+  .catch((err) => {
+    console.log('ERR:', err)
+    process.exit(1)
+  })
+  .then(process.exit)
+  
+});
 
+// app.post('/api/GetPhoto', (req, res) => {
+//   const course = req.body.course; // 从请求体中获取course数据
 
-    // Create and store a document
-    await collection.upsert(imageId, documentData);
+//   // 在这里处理course数据，例如将它保存到数据库或进行其他操作
 
-    // Load the Document and print it
-    // Prints Content and Metadata of the stored Document
-    let getResult = await collection.get(imageId)
-    console.log('Get Result: ', getResult)
-}
+//   // 假设您处理了course数据并得到了结果result
+//   const result = { message: `Received course: ${course}` };
 
-// Run the main function
-main()
-    .catch((err) => {
-        console.log('ERR:', err)
-        process.exit(1)
-    })
-    .then(process.exit)
-
-
-
-
-
-
-
-
-
-
-// const couchbase = require('couchbase')
-// const { v4: uuidv4 } = require('uuid');
-// const imageId = uuidv4(); // 生成一个UUID作为图像ID
-// const express = require('express');
-// const app = express();
-// const cors = require('cors');
-// const bodyParser = require('body-parser');
-// const cluster = require('cluster');
-
-
-
-// app.use(cors());
-//
-//
-// let clusterInstance;
-// async function startServer() {
-//
-//     const clusterConnStr = 'couchbase://192.168.50.17:8091';
-//     const username = 'Admin';
-//     const password = 'blackboard';
-//     const bucketName = 'black-board';
-//     const timestamp = Date.now();
-//
-//
-//     try {
-//         const clusterInstance = await couchbase.connect(clusterConnStr, {
-//             username: username,
-//             password: password,
-//             kvTimeout: 60000,
-//             queryTimeout: 60000
-//         });
-//
-//         const bucket = clusterInstance.bucket(bucketName);
-//         const collection = bucket.defaultCollection();
-//
-//         app.use(bodyParser.json());
-//
-//         // 处理前端发送的照片数据
-//         app.post('/api/photos', async (req, res) => {
-//             const {dataURL, Course} = req.body;
-//
-//             const course = Course;
-//             const semester = '110-1';
-//             const imageBase64 = Buffer.from(dataURL.split(',')[1], 'base64');
-//             const documentData = {
-//                 image: imageBase64,
-//                 course: course,
-//                 semester: semester,
-//                 timestamp: timestamp
-//             };
-//
-//             console.log('Cluster instance initialized successfully:', clusterInstance);
-//
-//             // 在 await collection.upsert(imageId, documentData); 之後添加錯誤處理
-//             try {
-//
-//                 await collection.upsert(imageId, documentData);
-//
-//                 // Load the Document and print it
-//                 // Prints Content and Metadata of the stored Document
-//                 let getResult = await collection.get(imageId)
-//                 console.log('Get Result: ', getResult)
-//
-//                 res.status(200).send('Photo saved successfully!');
-//             } catch (error) {
-//                 console.error('Error upserting document:', error);
-//                 res.status(500).send('Internal Server Error');
-//             }
-//
-//         });
-//
-//         app.listen(5000, () => {
-//             console.log('Server is running on port 5000');
-//         });
-//     }
-//     catch (error) {
-//         console.error('启动服务器时出错：', error);
-//     } finally {
-//         await clusterInstance.close(); // 关闭正确的集群实例
-//     }
-// }
-//
-//
-// startServer().catch(error => {
-//     console.error('Error starting the server:', error);
+//   // 发送处理结果给前端
+//   res.json(result);
 // });
+
+
+
+app.get('/api/course', (req, res) => {
+
+  res.json({ message: 'Photo data from Express.js API' });
+});
+
+app.listen(port, () => {
+  console.log(`Express server is running on port ${port}`);
+});

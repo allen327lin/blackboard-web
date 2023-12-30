@@ -1,19 +1,31 @@
 import React, { useRef, useEffect, useState } from "react";
 import './takeThePhoto.css';
 import { Dropdown } from "react-bootstrap";
-import axios from 'axios';
 
 function GetPhoto() {
     const photoRef = useRef(null);
     const videoRef = useRef(null);
     const [hasPhoto, setHasPhoto] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState("Course");
-    const [ws, setWs] = useState(null);
+    const [selectedSemester, setSelectedSemester] = useState("Semester");
+    const [postData, setPostData] = useState({ course: selectedCourse, semester: selectedSemester, imageBase64: null});
+
+
+    useEffect(() => {
+        startVideo();
+    }, []);
 
     const handleCourseSelection = (course) => {
         setSelectedCourse(course);
         console.log(`${course}`);
     };
+
+    const handleSemesterSelection = (semester) => {
+        setSelectedSemester(semester);
+        console.log(`${semester}`);
+    };
+
+    
 
     const startVideo = () => {
         navigator.mediaDevices
@@ -33,59 +45,58 @@ function GetPhoto() {
             });
     };
 
-    useEffect(() => {
-        // 初始化WebSocket连接
-        const socket = new WebSocket("ws://122.116.234.117:8091");
-        setWs(socket);
+    const handlePostRequest = (imageBase64) => {
+        const postData = { course: selectedCourse, semester: selectedSemester, imageBase64: imageBase64 };
 
-        socket.onopen = () => {
-            console.log("WebSocket连接已建立");
-            // 在WebSocket连接建立后再执行其他操作
-        };
-
-        // 处理WebSocket错误
-        socket.onerror = (error) => {
-            console.error("WebSocket错误:", error);
-        };
-
-        // 处理WebSocket关闭
-        socket.onclose = (event) => {
-            console.log("WebSocket连接已关闭:", event);
-        };
-
-        // 在组件卸载时关闭WebSocket连接
-        return () => {
-            socket.close();
-        };
-    }, []); // 空依赖数组确保只在组件加载时触发一次
+        console.log('Sending POST request with data:', JSON.stringify(postData)); // 打印JSON字符串，确保它是有效的
+        fetch('/api/GetPhoto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 在這裡處理解析後的 JSON 數據
+            console.log(data); // 使用 console.log() 輸出 JSON 數據
+        })
+        .catch(error => {
+            console.error('Error posting data:', error);
+        });
+    };
 
     const takePhoto = async () => {
         let video = videoRef.current;
         let photo = photoRef.current;
-
-        video.pause();
-
+        var playPromise = video.play();
+    
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                video.pause();
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+        
         const width = video.videoWidth;
         const height = video.videoHeight;
-
         photo.width = width;
         photo.height = height;
         let ctx = photo.getContext("2d");
-
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(video, 0, 0, width, height);
         setHasPhoto(true);
-
+        
         const dataURL = photo.toDataURL('image/png');
+        const imageBase64 = dataURL.split(',')[1]; // 提取base64編碼的部分
+    
+        handlePostRequest(imageBase64);
+    }
+    
 
-        try {
-            await axios.post('/api/photos', { dataURL: dataURL, Course: selectedCourse });
-            console.log('照片保存成功！');
-        } catch (error) {
-            console.error('保存照片出错:', error);
-        }
-    };
-
+    
     const closePhoto = () => {
         let photo = photoRef.current;
         let ctx = photo.getContext("2d");
@@ -96,17 +107,29 @@ function GetPhoto() {
         setHasPhoto(false);
     };
 
-    useEffect(() => {
-        startVideo();
-    }, []);
+    
+
 
     return (
         <div className="App">
-            <Dropdown className="dropDown">
-                <Dropdown.Toggle variant="course" id="dropdown-basic">
-                    {selectedCourse}
-                </Dropdown.Toggle>
 
+            <Dropdown className="Semester">
+                <Dropdown.Toggle variant="semester" id="dropdown-basic">
+                    {selectedSemester}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                    <Dropdown.Item onClick={() => handleSemesterSelection('110-1')}>110-1</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleSemesterSelection('110-2')}>110-2</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleSemesterSelection('111-1')}>111-1</Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
+
+            
+                
+            <Dropdown className="Course">
+                <Dropdown.Toggle variant="course" id="dropdown-basic">
+                        {selectedCourse}
+                </Dropdown.Toggle>
                 <Dropdown.Menu>
                     <Dropdown.Item onClick={() => handleCourseSelection('Math')}>Math</Dropdown.Item>
                     <Dropdown.Item onClick={() => handleCourseSelection('DataStructure')}>DataStructure</Dropdown.Item>
@@ -126,3 +149,4 @@ function GetPhoto() {
 }
 
 export default GetPhoto;
+

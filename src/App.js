@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CourseList from "./courseList/CourseList";
 import GetPhoto from "./getPhotos/takeThePhoto";
 import HomePage from "./Homepage/HomePage";
-import Subject from "./courseList/ListTemplate"
+// import Subject from "./courseList/ListTemplate"
 import CoursePictures from "./courseList/CoursePictures";
 
 function App() {

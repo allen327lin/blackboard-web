@@ -56,13 +56,29 @@ video {
 
 canvas {
     width: auto;
-    height: 100vh;
+    height: 98vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.dropDown{
+.Course{
+    z-index: 500;
+    font-size: 24px;
+    font-weight: 700;
+    position: fixed;
+    bottom: 70px;
+    left: 20px;
+    display: flex;
+    justify-content: center;
+    background-position: left top;
+    width: auto;
+    background-color: lightblue;
+}
+
+
+.Semester{
+    z-index: 600;
     font-size: 24px;
     font-weight: 700;
     position: fixed;
@@ -73,6 +89,10 @@ canvas {
     background-position: left top;
     width: auto;
     background-color: lightblue;
+}
+
+.bg-body-tertiary {
+    z-index: 1000; /* 設定一個足夠高的z-index值 */
 }
 
 

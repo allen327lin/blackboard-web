@@ -1,4 +1,8 @@
 const express = require('express');
+require('dotenv').config({path:'./process.env'});
+const username = process.env.COUCHBASE_USERNAME; 
+const password = process.env.COUCHBASE_PASSWORD; 
+
 const app = express();
 const cors = require('cors');
 const port = 5000;
@@ -12,18 +16,13 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json({ limit: '10mb' }));
 
-
-require('dotenv').config();
-
 app.use(cors());
 app.use(express.json());
 
 // 处理 "/api/GetPhoto" 路径的路由
 app.post('/api/GetPhoto', (req, res) => {
   async function main() {
-
-    const username = process.env.COUCHBASE_USERNAME; 
-    const password = process.env.COUCHBASE_PASSWORD; 
+    
     // const username = "Admin";
     // const password = "blackboard";
     const clusterConnStr = 'couchbase://localhost'

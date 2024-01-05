@@ -1,7 +1,9 @@
-import React from 'react';
 import './CoursePictures.css';
+import React, { useEffect, useState } from 'react';
 
 function CourseList() {
+    const [image, setImage] = useState([]);
+
     function LastWord() {
         const tempCurrentPath = window.location.pathname;
         const temp = tempCurrentPath.split('/').filter(part => part !== ''); // 刪除空字串
@@ -9,34 +11,48 @@ function CourseList() {
     }
 
     const currentPath = LastWord();
+    const semester = "110-1";
 
-    const coursePictures = [
-        { ImageUrl: "/Pictures/blackboard.jpg", Semester: "111-2", Subject: "Math" },
-        { ImageUrl: "/Pictures/logo512.png", Semester: "111-2", Subject: "DataStructure" },
-        { ImageUrl: "/Pictures/logo192.png", Semester: "111-2", Subject: "DataStructure" },
-        { ImageUrl: "/Pictures/logo192.png", Semester: "111-2", Subject: "Math" },
-        { ImageUrl: "/Pictures/logo192.png", Semester: "111-2", Subject: "th" },
-        { ImageUrl: "/Pictures/blackboard.jpg", Semester: "111-2", Subject: "th" }
-    ];
+    const handlePostRequest = (currentPath, semester) => {
+        const postData = { course: currentPath, semester: semester};
 
-    function DistinguishSubject(subject, index, ImageUrl) {
-        if (currentPath === subject) {
-            console.log(currentPath, subject);
-            return <img key={index} src={ImageUrl} alt="" />;
-        }
-        return null; // 如果不符合條件，返回null
-    }
+        console.log('Sending POST request with data:', JSON.stringify(postData)); // 打印JSON字符串，确保它是有效的
+        fetch('/api/GetCoursePhoto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 在這裡處理解析後的 JSON 數據
+            setImage(data);
+            console.log(data); // 使用 console.log() 輸出 JSON 數據
+        })
+        .catch(error => {
+            console.error('Error posting data:', error);
+        });
+    };
 
-    return (
+
+    useEffect(() => {
+        handlePostRequest(currentPath, semester);
+      }, []);
+      
+      const imageBase64 = Array.isArray(image.image) ? image.image : [];
+      console.log(imageBase64);
+      
+      return (
         <div className="CoursePictures">
-            <h1 className="CourseTitle">{currentPath}</h1>
-            <div className="CourseList">
-                {coursePictures.map((item, index) => (
-                    DistinguishSubject(item.Subject, index, item.ImageUrl)
-                ))}
-            </div>
+          <h1 className="CourseTitle">{currentPath}</h1>
+          <div className="CourseList">
+            {imageBase64.map((item, index) => (
+              <img key={index} src={`data:image/png;base64,${item}`} alt=""/>
+            ))}
+          </div>
         </div>
-    );
-}
+      );
+}      
 
 export default CourseList;

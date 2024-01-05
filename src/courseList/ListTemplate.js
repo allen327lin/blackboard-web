@@ -3,15 +3,15 @@ import Card from 'react-bootstrap/Card';
 import { Link } from 'react-router-dom';
 
 function ListTemplate(props) {
-    const { Semester = 'undefined', Subject } = props;
+    const { semester, course } = props;
 
     return (
-        <Link to={`/CourseList/${Subject}`}>
+        <Link to={`/CourseList/${course}`}>
             <div className="CardWrapper">
                 <Card style={{ width: '15rem' }}>
                     <Card.Body>
-                        <Card.Title>{Subject}</Card.Title>
-                        <Card.Text>{Semester}</Card.Text>
+                        <Card.Title>{course}</Card.Title>
+                        <Card.Text>{semester}</Card.Text>
                     </Card.Body>
                 </Card>
             </div>

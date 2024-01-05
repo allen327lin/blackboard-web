@@ -7,7 +7,6 @@ const app = express();
 const cors = require('cors');
 const port = 5000;
 const couchbase = require('couchbase')
-const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const imageId = uuidv4(); // 生成一个UUID作为图像ID
 const bodyParser = require('body-parser');
@@ -16,15 +15,12 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json({ limit: '10mb' }));
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
-// 处理 "/api/GetPhoto" 路径的路由
 app.post('/api/GetPhoto', (req, res) => {
   async function main() {
-    
-    // const username = "Admin";
-    // const password = "blackboard";
+
     const clusterConnStr = 'couchbase://localhost'
     const timestamp = Date.now();
   
@@ -32,7 +28,6 @@ app.post('/api/GetPhoto', (req, res) => {
       username: username,
       password: password,
     })
-    // end::connect[]
 
     const course = req.body.course;
     const semester = req.body.semester;
@@ -49,9 +44,6 @@ app.post('/api/GetPhoto', (req, res) => {
     };
   
     const bucket = cluster.bucket("black-board");
-    // const scopeName = course
-  
-    // Get a reference to the default collection, required only for older Couchbase server versions
   
     const collection = bucket.scope('CoursePicture').collection('Picture')
   
@@ -68,37 +60,113 @@ app.post('/api/GetPhoto', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
       res.status(413).send("Request Entity Too Large");
 
-    }
+    } finally {
+      // 在不论成功还是失败时都关闭数据库连接
+      cluster.close();
+}
   
   }
 
   main()
   .catch((err) => {
     console.log('ERR:', err)
-    process.exit(1)
   })
-  .then(process.exit)
   
 });
 
-// app.post('/api/GetPhoto', (req, res) => {
-//   const course = req.body.course; // 从请求体中获取course数据
-
-//   // 在这里处理course数据，例如将它保存到数据库或进行其他操作
-
-//   // 假设您处理了course数据并得到了结果result
-//   const result = { message: `Received course: ${course}` };
-
-//   // 发送处理结果给前端
-//   res.json(result);
-// });
 
 
+app.get('/api/queryDistinctValue', async (req, res) => {
+  try {
+    const key1 = 'course';
+    const key2 = 'semester';
 
-app.get('/api/course', (req, res) => {
+    const distinctValues = await main(key1, key2);
+    
+    // 将course和semester组合成对象的形式
+    const combinedValues = distinctValues.map(item => ({
+      course: item[key1],
+      semester: item[key2]
+    }));
 
-  res.json({ message: 'Photo data from Express.js API' });
+    res.status(200).json({
+      combinedValues: combinedValues
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+
+  async function main(key1, key2) {
+    const clusterConnStr = 'couchbase://localhost';
+  
+    const cluster = await couchbase.connect(clusterConnStr, {
+      username: username,
+      password: password,
+    });
+  
+    try {
+      const query = `SELECT DISTINCT ${key1}, ${key2} FROM \`black-board\`.\`CoursePicture\`.\`Picture\` WHERE ${key1} IS NOT MISSING AND ${key2} IS NOT MISSING`;
+      const options = {
+        parameters: [key1, key2]
+      };
+  
+      const result = await cluster.query(query, options);
+      const combinedValues = result.rows.map(row => ({
+        [key1]: row[key1],
+        [key2]: row[key2]
+      }));
+      return combinedValues;
+    } finally {
+      // 在不论成功还是失败时都关闭数据库连接
+      cluster.close();
+}
+};
+
+
+app.post('/api/GetCoursePhoto', async (req, res) => {
+    async function main() {
+
+      const clusterConnStr = 'couchbase://localhost'
+
+      const cluster = await couchbase.connect(clusterConnStr, {
+        username: username,
+        password: password,
+      })
+  
+      const course = req.body.course;
+      const semester = req.body.semester;
+
+      const query = `SELECT DISTINCT image FROM \`black-board\`.\`CoursePicture\`.\`Picture\` WHERE course = '${course}';`;
+      const options = {
+        parameters: [course, semester]
+      };
+    
+      const bucket = cluster.bucket("black-board");
+    
+      const collection = bucket.scope('CoursePicture').collection('Picture')
+    
+      try {
+        const result = await cluster.query(query, options);
+        const images = result.rows.map(item => item.image);
+        // console.log(result);
+        res.status(200).json({image: images}); // 将结果发送回客户端
+      } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' }); // 发送错误响应到客户端
+      } finally {
+        // 在不论成功还是失败时都关闭数据库连接
+        cluster.close();
+  }
+      
+    }
+    main()
+  .catch((err) => {
+    console.log('ERR:', err)
+  })
+
+})
 
 app.listen(port, () => {
   console.log(`Express server is running on port ${port}`);
